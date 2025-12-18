@@ -40,6 +40,8 @@ from mujoco_playground._src.locomotion.spot import joystick as spot_joystick
 from mujoco_playground._src.locomotion.spot import joystick_gait_tracking as spot_joystick_gait_tracking
 from mujoco_playground._src.locomotion.t1 import joystick as t1_joystick
 from mujoco_playground._src.locomotion.t1 import randomize as t1_randomize
+from mujoco_playground._src.locomotion.go2 import joystick as go2_joystick
+from mujoco_playground._src.locomotion.go2 import randomize as go2_randomize
 
 
 _envs = {
@@ -61,6 +63,9 @@ _envs = {
     ),
     "Go1JoystickFlatTerrain": functools.partial(
         go1_joystick.Joystick, task="flat_terrain"
+    ),
+    "Go2JoystickFlatTerrain": functools.partial(
+        go2_joystick.Joystick, task="flat_terrain"
     ),
     "Go1JoystickRoughTerrain": functools.partial(
         go1_joystick.Joystick, task="rough_terrain"
@@ -102,6 +107,7 @@ _cfgs = {
     "Go1Getup": go1_getup.default_config,
     "Go1Handstand": go1_handstand.default_config,
     "Go1Footstand": go1_handstand.default_config,
+    "Go2JoystickFlatTerrain": go2_joystick.default_config,
     "H1InplaceGaitTracking": h1_inplace_gait_tracking.default_config,
     "H1JoystickGaitTracking": h1_joystick_gait_tracking.default_config,
     "Op3Joystick": op3_joystick.default_config,
@@ -126,6 +132,7 @@ _randomizer = {
     "Go1Getup": go1_randomize.domain_randomize,
     "Go1Handstand": go1_randomize.domain_randomize,
     "Go1Footstand": go1_randomize.domain_randomize,
+    "Go2JoystickFlatTerrain": go2_randomize.domain_randomize,
     "T1JoystickFlatTerrain": t1_randomize.domain_randomize,
     "T1JoystickRoughTerrain": t1_randomize.domain_randomize,
 }
