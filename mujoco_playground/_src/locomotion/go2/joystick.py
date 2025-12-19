@@ -35,6 +35,8 @@ from mujoco_playground._src.locomotion.go2 import go2_constants as consts
 def default_config() -> config_dict.ConfigDict:
   return config_dict.create(
       ctrl_dt=0.02,
+      observation_size=3,
+      action_size=12,
       sim_dt=0.004,
       episode_length=1000,
       Kp=35.0,
