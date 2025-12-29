@@ -92,6 +92,12 @@ python learning/train_jax_ppo.py --env_name PandaPickCube --rscope_envs 16 --run
 # In a separate terminal
 python -m rscope
 ```
+### To run the synchronous simulation of the walking task using the trained policy
+From the root of the repository, this code should be run:
+```
+cd mujoco_playground/_src/locomotion/go2/
+python3 simulate_sync.py
+```
 
 ## FAQ
 

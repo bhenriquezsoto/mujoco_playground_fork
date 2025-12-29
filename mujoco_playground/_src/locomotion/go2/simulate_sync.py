@@ -1,3 +1,5 @@
+"Synchronous simulation of the Go2 robot walking task using a trained PPO policy."
+
 import os
 from brax.training.agents.ppo import networks as ppo_networks
 from brax.io import model
@@ -22,7 +24,7 @@ jax.config.update('jax_disable_jit', False)
 # Remove jax debug logging
 logging.getLogger('jax').setLevel(logging.WARNING)
 
-def get_obs_sensors(model: mujoco.MjModel, data: mjx.Data) -> List:
+def get_obs_sensors(model: mujoco.MjModel, data: mujoco.MjData) -> List:
 	"""
 	Gets the observation sensors for the Go2 robot
 
@@ -46,6 +48,13 @@ def get_obs_sensors(model: mujoco.MjModel, data: mjx.Data) -> List:
 def import_model(env_name='Go2JoystickFlatTerrain', env_cfg=None):
 	"""
 	This function imports the PPO trained model for the task 'Go2JoystickFlatTerrain'.
+
+	Args:
+		env_name (str): The name of the environment. Default is 'Go2JoystickFlatTerrain'.
+		env_cfg: The environment configuration.
+
+	Returns:
+		inference_fnTEST: The inference function for the trained model.
 	"""
 	
 	
@@ -73,6 +82,19 @@ if __name__ == "__main__":
 	command = jax.numpy.array([0.0, 0.0, 0])
 
 	def on_key_release(key):
+		"""
+		Callback function for key release events in the Mujoco viewer. 
+		This function updates the global command variable based on the arrow
+		keys released or spacebar.
+
+		Args:
+			key: int
+				The key code of the released key.
+
+		Returns:
+			None
+
+		"""
 		global command
 		if key == 265:
 			print("Up arrow released")
@@ -96,43 +118,24 @@ if __name__ == "__main__":
 			command = jax.numpy.array([0.0, 0.0, 0.0])
 
 	with mujoco.viewer.launch_passive(m, d, key_callback=on_key_release) as viewer:
-		# Obtain observations
 		mujoco.mj_resetData(m, d)
-		# act_rng, rng = jax.random.split(rng)
-		# obs_sensors = get_obs_sensors(m, d)
-		# obs = jax.numpy.concatenate(obs_sensors + [last_action, command_1])
-		# # Inference from command -> angle off set for each of the joints
-		# ctrl, _ = inference(obs, act_rng)
 		timer_control = time.time()
 		motors_targets = m.keyframe("home").qpos[7:]
 		while viewer.is_running:
-			# print(f"Control dt: {env_cfg.ctrl_dt}s, Sim dt: {env_cfg.sim_dt}s")
 			step_start = time.time()
 
 			if (counter_control % int(env_cfg.ctrl_dt / env_cfg.sim_dt)) == 0:
 				act_rng, rng = jax.random.split(rng)
-				# print(f"Time elapsed for random split: {time.time() - step_start:.4f}s")
 				obs_sensors = get_obs_sensors(m, d)
-				# print(f"Time elapsed for getting sensors: {time.time() - step_start:.4f}s")
 				obs = jax.numpy.concatenate(obs_sensors + [last_action, command])
-				# print(f"Time elapsed for concatenating obs: {time.time() - step_start:.4f}s")
-				# Inference from command -> angle off set for each of the joints
 				ctrl, _ = inference(obs, act_rng)
-				# print(f"Time elapsed for inference: {time.time() - step_start:.4f}s")
 				motors_targets = m.keyframe("home").qpos[7:] + ctrl * env_cfg.action_scale
-				# print(f"Time elapsed for getting motor targets: {time.time() - step_start:.4f}s")
 				timer_control = time.time()
 				last_action = ctrl
-				# print("Time used in control loop: {:.4f}s".format(time.time() - step_start))
 			
 			d.ctrl = motors_targets	
 
 			time_until_next_step = env_cfg.sim_dt - (time.time() - step_start)
-			# if time_until_next_step > 0:
-			# 	time.sleep(time_until_next_step)
-			# else:
-			# 	print(f"Step took longer ({env_cfg.sim_dt - time_until_next_step:.4f}s) than sim_dt of {env_cfg.sim_dt}s")
-			# 	pass
 
 			mujoco.mj_step(m, d)
 			viewer.sync()
